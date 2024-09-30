@@ -15,7 +15,12 @@ class Grid(context: Context, attrs: AttributeSet) : GridView(context, attrs) {
         numColumns=GameEngine.WIDTH;
         adapter=(GridAdapter());
   }
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+    }
 }
+
+
 private class GridAdapter: BaseAdapter(){
     override fun getCount(): Int {
         return GameEngine.WIDTH * GameEngine.HEIGHT;

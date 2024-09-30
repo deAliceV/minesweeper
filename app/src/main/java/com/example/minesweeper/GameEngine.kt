@@ -2,6 +2,7 @@ package com.example.minesweeper
 
 import android.content.Context
 import android.view.View
+import android.widget.Toast
 import com.example.minesweeper.util.GeneratorGrid
 import com.example.minesweeper.util.PrintGrid
 import com.example.minesweeper.views.grid.Cell
@@ -38,9 +39,9 @@ class GameEngine private constructor() {
         for (x in 0 until WIDTH) {
             for (y in 0 until HEIGHT) {
                 if(MinesweeperGrid[x][y] == null){
-                    MinesweeperGrid[x][y] = Cell(context, y * HEIGHT + x)
+                    MinesweeperGrid[x][y] = Cell(context, x, y)
                 }
-                MinesweeperGrid[x][y]?.value = grid[x][y]
+                MinesweeperGrid[x][y]?.setValue(grid[x][y])
                 MinesweeperGrid[x][y]?.invalidate();
             }
         }
@@ -58,12 +59,12 @@ class GameEngine private constructor() {
     }
     fun click(x: Int, y: Int) {
         // Verifica que las coordenadas estén dentro de los límites y que la celda no esté clicada
-        if (x >= 0 && y >= 0 && x < WIDTH && y < HEIGHT && !(getCellAt(x, y)?.clicked == true)) {
+        if (x >= 0 && y >= 0 && x < WIDTH && y < HEIGHT && !(getCellAt(x, y)?.isClicked() == true)) {
             // Marca la celda como clicada
-            getCellAt(x, y)?.clicked = true
+            getCellAt(x, y)?.setClicked()
 
             // Verifica si el valor de la celda es 0
-            if (getCellAt(x, y)?.value == 0) {
+            if (getCellAt(x, y)?.getValue() == 0) {
                 // Itera sobre las celdas adyacentes
                 for (xt in -1..1) {
                     for (yt in -1..1) {
@@ -76,23 +77,59 @@ class GameEngine private constructor() {
             }
 
             // Verifica si la celda es una bomba
-            if (getCellAt(x, y)?.bomb == true) {
+            if (getCellAt(x, y)?.isBomb() == true) {
                 onGameLost()
             }
         }
 
-        //checkEnd()
+        checkEnd()
     }
     fun flag(x: Int, y: Int) {
-        val cell = getCellAt(x, y)?: return // Obtiene la celda en la posición (x, y)
-        val isFlagged = cell.flagged // Obtiene el estado de si la celda está marcada con una bandera
-        cell.flagged = !isFlagged // Cambia el estado de la bandera
-        cell.invalidate() // Redibuja la celda
+        val cell = getCellAt(x, y)
+        cell?.let {
+            val isCurrentlyFlagged = it.isFlagged() // Llama a la función isFlagged()
+            it.setFlagged(!isCurrentlyFlagged) // Llama a setFlagged() con el valor opuesto
+            it.invalidate() // Actualiza la vista
+        }
     }
 
-    private fun onGameLost(){
 
+
+    private fun onGameLost() {
+        // Manejar la pérdida del juego
+        Toast.makeText(context, "Game lost", Toast.LENGTH_SHORT).show()
+
+        for (x in 0 until WIDTH) {
+            for (y in 0 until HEIGHT) {
+                getCellAt(x, y)?.setRevealed() // Asegúrate de que la celda no sea nula
+            }
+        }
     }
+
+    private fun checkEnd(): Boolean {
+        var bombNotFound = BOMB_NUMBER
+        var notRevealed = WIDTH * HEIGHT
+
+        for (x in 0 until WIDTH) {
+            for (y in 0 until HEIGHT) {
+                val cell = getCellAt(x, y)
+                if (cell?.isRevealed()==true || cell?.isFlagged() == true) {
+                    notRevealed--
+                }
+
+                if (cell?.isFlagged() == true && cell.isBomb()) {
+                    bombNotFound--
+                }
+            }
+        }
+
+        if (bombNotFound == 0 && notRevealed == 0) {
+            Toast.makeText(context, "Game won", Toast.LENGTH_SHORT).show()
+        }
+
+        return false
+    }
+
 
 }
 

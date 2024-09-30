@@ -8,10 +8,10 @@ import androidx.core.content.ContextCompat
 import com.example.minesweeper.GameEngine
 import com.example.minesweeper.R
 
-class Cell(context: Context, position: Int): BaseCell(context), View.OnClickListener, View.OnLongClickListener {
+class Cell(context: Context,x: Int,y: Int): BaseCell(context), View.OnClickListener, View.OnLongClickListener {
 
     init{
-        this.position = position
+        setPosition(x,y)
         setOnClickListener(this)
         setOnLongClickListener(this)
     }
@@ -19,11 +19,11 @@ class Cell(context: Context, position: Int): BaseCell(context), View.OnClickList
         super.onMeasure(widthMeasureSpec, widthMeasureSpec)
     }
     override fun onClick(v: View){
-        GameEngine.instance.click(x, y);
+        GameEngine.instance.click(getXPos(), getYPos());
     }
     override fun onLongClick(v: View): Boolean {
         // Llama al método flag del GameEngine usando las coordenadas x e y
-        GameEngine.instance.flag(x, y)
+        GameEngine.instance.flag(getXPos(), getYPos())
 
         // Devuelve true para indicar que el evento fue manejado
         return true
@@ -32,13 +32,13 @@ class Cell(context: Context, position: Int): BaseCell(context), View.OnClickList
     override fun onDraw(canvas: Canvas){
         super.onDraw(canvas)
         drawButton(canvas)
-        if (flagged) {
+        if (isFlagged()) {
             drawFlag(canvas)
-        } else if (revealed && bomb && !clicked) {
+        } else if (isRevealed() && isBomb() && !isClicked()) {
             drawNormalBomb(canvas)
         } else {
-            if (clicked) {
-                if (value == -1) {
+            if (isClicked()) {
+                if (getValue() == -1) {
                     drawBombExploded(canvas)
                 } else {
                     drawNumber(canvas)
@@ -77,7 +77,7 @@ class Cell(context: Context, position: Int): BaseCell(context), View.OnClickList
         drawable?.draw(canvas)
     }
     private fun drawNumber(canvas: Canvas){
-        val drawable: Drawable? = when (value) {
+        val drawable: Drawable? = when (getValue()) {
             0 -> ContextCompat.getDrawable(context, R.drawable.number_0)
             1 -> ContextCompat.getDrawable(context, R.drawable.number_1)
             2 -> ContextCompat.getDrawable(context, R.drawable.number_2)
