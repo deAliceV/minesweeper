@@ -46,13 +46,54 @@ class GameEngine private constructor() {
         }
     }
 
-    fun getCellAt(position: Int): View?{
+    fun getCellAt(position: Int): Cell?{
         val x = position % WIDTH
         val y = position / WIDTH
 
         return MinesweeperGrid[x][y]
 
     }
+    fun getCellAt(x: Int, y: Int): Cell? {
+        return MinesweeperGrid[x][y]
+    }
+    fun click(x: Int, y: Int) {
+        // Verifica que las coordenadas estén dentro de los límites y que la celda no esté clicada
+        if (x >= 0 && y >= 0 && x < WIDTH && y < HEIGHT && !(getCellAt(x, y)?.clicked == true)) {
+            // Marca la celda como clicada
+            getCellAt(x, y)?.clicked = true
+
+            // Verifica si el valor de la celda es 0
+            if (getCellAt(x, y)?.value == 0) {
+                // Itera sobre las celdas adyacentes
+                for (xt in -1..1) {
+                    for (yt in -1..1) {
+                        // Evita llamar a la misma celda
+                        if (xt != 0 || yt != 0) {
+                            click(x + xt, y + yt)
+                        }
+                    }
+                }
+            }
+
+            // Verifica si la celda es una bomba
+            if (getCellAt(x, y)?.bomb == true) {
+                onGameLost()
+            }
+        }
+
+        //checkEnd()
+    }
+    fun flag(x: Int, y: Int) {
+        val cell = getCellAt(x, y)?: return // Obtiene la celda en la posición (x, y)
+        val isFlagged = cell.flagged // Obtiene el estado de si la celda está marcada con una bandera
+        cell.flagged = !isFlagged // Cambia el estado de la bandera
+        cell.invalidate() // Redibuja la celda
+    }
+
+    private fun onGameLost(){
+
+    }
+
 }
 
 
